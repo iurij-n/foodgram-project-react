@@ -20,7 +20,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'apv$)3@w4i+ge(tc*crga0#po4j!-xf94*lfm2*)f3dl*pklzm'
+# SECRET_KEY = 'apv$)3@w4i+ge(tc*crga0#po4j!-xf94*lfm2*)f3dl*pklzm'
+SECRET_KEY = os.getenv('SECRET_KEY', default='okdd2!0ks1k5q!*@29q3tnlftr_g4zo@8+t%x*2+=a^j!6')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -79,6 +80,18 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
+#         'NAME': os.getenv('DB_NAME', default='postgres'),
+#         'USER': os.getenv('POSTGRES_USER', default='postgres'),
+#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='ks1k5q!*@29q3tnl'),
+#         'HOST': os.getenv('DB_HOST', default='localhost'),
+#         # 'PORT': os.getenv('DB_PORT', default='5432')
+#         'PORT': os.getenv('DB_PORT', default='')
+#     }
+# }
 
 
 # Password validation
