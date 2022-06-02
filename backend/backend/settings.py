@@ -28,6 +28,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+EMPTY_VALUE_DISPLAY = '-пусто-'
+
+DEFAULT_AUTO_FIELD='django.db.models.AutoField'
+
 
 # Application definition
 
@@ -38,7 +42,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'recipe.apps.RecipeConfig',
+    'users.apps.UsersConfig',
+    'api.apps.ApiConfig',
+    'rest_framework',
 ]
+
+AUTH_USER_MODEL = 'users.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -118,7 +128,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ru-ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 

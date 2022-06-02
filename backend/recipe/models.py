@@ -1,0 +1,162 @@
+from django.db import models
+from django.db.models import F, Q
+
+from .validators import validate_slug
+from users.models import User
+
+
+class Tag(models.Model):
+    """Модель Tag: тэги рецептов."""
+
+    name = models.CharField(
+        'Тэг',
+        max_length = 200,
+        unique=True,
+        help_text='Тэг')
+    color = models.CharField(
+        'Цвет тэга',
+        max_length = 7,
+        blank=True,
+        unique=True,
+        help_text='Цветовой HEX-код (например, #49B64E)')
+    slug = models.SlugField(
+        'Префикс',
+        max_length=200,
+        blank=True,
+        unique=True,
+        # validators=[validate_slug],
+        help_text='Префикс, slug')
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name = 'Тэг'
+        verbose_name_plural = 'Тэги'
+    
+    def __str__(self): 
+        return self.name
+
+
+class Foodstuff(models.Model):
+    """Модель Foodstuff: продукты."""
+
+    name = models.CharField(
+        'Название продукта',
+        max_length = 200,
+        help_text='Название продукта')
+    measurement_unit = models.CharField(
+        'Единица измерения',
+        max_length = 200,
+        help_text='Единица измерения')
+    
+    def __str__(self): 
+        return self.name
+
+
+class Recipe(models.Model):
+    """Модель Recipe: рецепты блюд."""
+
+    name = models.CharField(
+        'Название рецепта',
+        max_length = 200,
+        help_text='Название рецепта')
+    author = models.ForeignKey(
+        User,
+        verbose_name='Автор рецепта',
+        on_delete=models.CASCADE,
+        related_name='recipes',
+        help_text='Автор рецепта'
+    )
+    text = models.TextField(
+        'Описание рецепта',
+        help_text='Описание рецепта')
+    tag = models.ManyToManyField(Tag)
+    cooking_time = models.PositiveSmallIntegerField(
+        'Время приготовления в минутах',
+        help_text='Время приготовления в минутах'
+    )
+
+    class Meta:
+        
+        ordering = ('pk',)
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
+    
+    def __str__(self): 
+        return self.name
+
+
+class Ingredients(models.Model):
+    """Модель Ingredients: ингредиенты блюда."""
+
+    recipe_id = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='ingredient',
+        help_text='Ингредиент блюда')
+    amount = models.PositiveSmallIntegerField(
+        'Количество ингредиента',
+        help_text='Количество ингредиента')
+    foodstuff = models.ForeignKey(
+        Foodstuff,
+        verbose_name='Название продукта',
+        on_delete=models.CASCADE,
+        related_name='foodstuffs',
+        help_text='Название продукта'
+    )
+
+    class Meta:
+
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
+
+class Favorites(models.Model):
+    """Модель : избранные рецепты."""
+
+    user = models.ForeignKey(
+        User,
+        verbose_name='Подписчик',
+        on_delete=models.CASCADE,
+        related_name='subscriber',
+        help_text='Имя подписчика'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        verbose_name='Избранный рецепт',
+        on_delete=models.CASCADE,
+        related_name='favourites',
+        help_text='Избранный рецепт'
+    )
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'recipe'],
+                                    name='unique_favorite'),
+        ]
+
+
+
+class Follow(models.Model):
+    """Система подписок на отдельных авторов"""
+
+    user = models.ForeignKey(
+        User,
+        verbose_name='Подписчик',
+        on_delete=models.CASCADE,
+        related_name='follower',
+        help_text='Имя подписчика'
+    )
+    author = models.ForeignKey(
+        User,
+        verbose_name='Автор рецепта',
+        on_delete=models.CASCADE,
+        related_name='following',
+        help_text='Имя автора рецепта'
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'author'],
+                                    name='unique_follow'),
+            models.CheckConstraint(check=~Q(user=F('author')),
+                                   name='subscribe_to_yourself'),
+        ]
