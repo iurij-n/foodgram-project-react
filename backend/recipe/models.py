@@ -28,7 +28,7 @@ class Tag(models.Model):
         help_text='Префикс, slug')
 
     class Meta:
-        ordering = ('name',)
+        ordering = ('id',)
         verbose_name = 'Тэг'
         verbose_name_plural = 'Тэги'
     
@@ -50,6 +50,11 @@ class Foodstuff(models.Model):
     
     def __str__(self): 
         return self.name
+    
+    class Meta:
+        ordering = ('name',)
+        verbose_name = 'Продукты'
+        verbose_name_plural = 'Продукты'
 
 
 class Recipe(models.Model):
@@ -128,6 +133,8 @@ class Favorites(models.Model):
     )
     
     class Meta:
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
         constraints = [
             models.UniqueConstraint(fields=['user', 'recipe'],
                                     name='unique_favorite'),
@@ -154,6 +161,8 @@ class Follow(models.Model):
     )
 
     class Meta:
+        verbose_name = 'Подписки'
+        verbose_name_plural = 'Подписки'
         constraints = [
             models.UniqueConstraint(fields=['user', 'author'],
                                     name='unique_follow'),
