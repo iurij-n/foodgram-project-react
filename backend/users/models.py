@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models import F, Q
 
 
 class UserRole():
@@ -21,6 +23,25 @@ class User(AbstractUser):
         default=UserRole.USER,
         verbose_name='Уровень доступа'
     )
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        blank=False,
+        validators=[
+            RegexValidator(
+                regex='^[\w.@+-]+\Z',
+                # message='Username must be Alphanumeric',
+                # code='invalid_username'
+            ),
+        ]
+    )
+    email = models.EmailField(
+        max_length=254,
+        unique=True
+    )
+    
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name', 'password']
 
     @property
     def allowed_role(self):
@@ -31,4 +52,4 @@ class User(AbstractUser):
         return self.role == UserRole.ADMIN
 
     class Meta:
-        ordering = ('username',)
+        ordering = ('pk',)

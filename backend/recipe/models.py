@@ -79,10 +79,14 @@ class Recipe(models.Model):
         'Время приготовления в минутах',
         help_text='Время приготовления в минутах'
     )
+    pub_date = models.DateTimeField(
+        'Дата и время написания обзора',
+        auto_now_add=True
+    )
 
     class Meta:
         
-        ordering = ('pk',)
+        ordering = ('-pub_date',)
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
     
