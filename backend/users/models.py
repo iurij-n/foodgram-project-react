@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import F, Q
 
 
 class UserRole():
@@ -40,8 +39,8 @@ class User(AbstractUser):
         unique=True
     )
     
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name', 'password']
+    # USERNAME_FIELD = 'email'
+    # REQUIRED_FIELDS = ['username', 'first_name', 'last_name', 'password']
 
     @property
     def allowed_role(self):

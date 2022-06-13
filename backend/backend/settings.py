@@ -54,26 +54,29 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = 'users.User'
 
 DJOSER = {
+    'LOGIN_FIELD': 'email',
+    # 'REQUIRED_FIELDS': ['username', 'first_name', 'last_name', 'password'],
+    # 'HIDE_USERS': False,
     'SERIALIZERS': {
-         'user_create': 'api.serializers.UserSerializer'
-    }
+        # 'user_create': 'api.serializers.CustomUserCreateSerializer',
+        # 'user': 'api.serializers.UserDetailSerializer',
+        # 'user': 'api.serializers.CustomUserCreateSerializer',
+        'current_user': 'api.serializers.CustomUserSerializer',
+    },
+    # 'PERMISSIONS': {
+    #     'user_list': ['rest_framework.permissions.AllowAny',],
+    # }
 }
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny', 
+        'rest_framework.permissions.IsAuthenticated', 
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
-
-# SIMPLE_JWT = {
-#     # Устанавливаем срок жизни токена
-#    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-#    'AUTH_HEADER_TYPES': ('Bearer',),
-# }
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
