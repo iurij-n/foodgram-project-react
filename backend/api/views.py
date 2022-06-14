@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions, viewsets
 
-from recipe.models import Tag, Recipe
+from recipe.models import Tag, Recipe, Ingredient
 from users.models import User
 from .pagination import UserListPagination
 from .serializers import (TagSerializer,

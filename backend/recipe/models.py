@@ -36,8 +36,8 @@ class Tag(models.Model):
         return self.name
 
 
-class Foodstuff(models.Model):
-    """Модель Foodstuff: продукты."""
+class Ingredient(models.Model):
+    """Модель Ingredients: продукты."""
 
     name = models.CharField(
         'Название продукта',
@@ -94,7 +94,7 @@ class Recipe(models.Model):
         return self.name
 
 
-class Ingredients(models.Model):
+class RecipeIngredient(models.Model):
     """Модель Ingredients: ингредиенты блюда."""
 
     recipe_id = models.ForeignKey(
@@ -105,11 +105,11 @@ class Ingredients(models.Model):
     amount = models.PositiveSmallIntegerField(
         'Количество ингредиента',
         help_text='Количество ингредиента')
-    foodstuff = models.ForeignKey(
-        Foodstuff,
+    ingredient = models.ForeignKey(
+        Ingredient,
         verbose_name='Название продукта',
         on_delete=models.CASCADE,
-        related_name='foodstuffs',
+        related_name='ingredient',
         help_text='Название продукта'
     )
 
