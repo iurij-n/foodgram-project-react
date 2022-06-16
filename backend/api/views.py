@@ -7,17 +7,19 @@ from .serializers import (TagSerializer,
                           RecipeSerializer,
                           CustomUserCreateSerializer,
                           UserDetailSerializer,
-                          UserListSerializer)
+                          UserListSerializer,
+                          IngredientSerializer)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    permission_classes = (permissions.AllowAny,)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    # serializer_class = RecipeSerializer
+    serializer_class = RecipeSerializer
 
 class UserViewSet(generics.ListCreateAPIView):
     queryset = User.objects.all()
@@ -39,3 +41,8 @@ class UserDetail(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserDetailSerializer
     permissions_calsses = (permissions.IsAuthenticated,)
+
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    permission_classes = (permissions.AllowAny,)

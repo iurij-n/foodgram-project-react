@@ -1,3 +1,4 @@
+from tkinter import CASCADE
 from django.db import models
 from django.db.models import F, Q
 
@@ -73,8 +74,16 @@ class Recipe(models.Model):
     )
     text = models.TextField(
         'Описание рецепта',
-        help_text='Описание рецепта')
-    tag = models.ManyToManyField(Tag)
+        help_text='Описание рецепта'
+    )
+    tags = models.ManyToManyField(
+        Tag,
+        through='RecipeTag'
+    )
+    ingredients = models.ManyToManyField(
+        Ingredient,
+        through='RecipeIngredient'
+    )
     cooking_time = models.PositiveSmallIntegerField(
         'Время приготовления в минутах',
         help_text='Время приготовления в минутах'
@@ -94,17 +103,33 @@ class Recipe(models.Model):
         return self.name
 
 
+class RecipeTag(models.Model):
+    """Модель связывающая рецепт и тэги"""
+    
+    tag = models.ForeignKey(
+        Tag,
+        on_delete=CASCADE
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=CASCADE        
+    )
+
+
 class RecipeIngredient(models.Model):
     """Модель Ingredients: ингредиенты блюда."""
 
     recipe_id = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='ingredient',
-        help_text='Ингредиент блюда')
+        related_name='recipe',
+        help_text='Ингредиент блюда'
+    )
     amount = models.PositiveSmallIntegerField(
         'Количество ингредиента',
-        help_text='Количество ингредиента')
+        help_text='Количество ингредиента',
+        # related_name = 'ingredient_amount'
+    )
     ingredient = models.ForeignKey(
         Ingredient,
         verbose_name='Название продукта',

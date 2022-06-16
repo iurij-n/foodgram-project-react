@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from backend.settings import EMPTY_VALUE_DISPLAY
 
-from .models import Recipe, Tag, Ingredient, RecipeIngredient, Favorites, Follow
+from .models import Recipe, Tag, Ingredient, RecipeIngredient, Favorites, Follow, RecipeTag
 
 
 @admin.register(Recipe)
@@ -39,4 +39,10 @@ class FavoritesAdmin(admin.ModelAdmin):
 class FollowAdmin(admin.ModelAdmin):
     list_display = ('pk', 'user', 'author')
     search_fields = ('user',)
+    empty_value_display = EMPTY_VALUE_DISPLAY
+
+@admin.register(RecipeTag)
+class RecipeTagAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'tag', 'recipe')
+    search_fields = ('tag',)
     empty_value_display = EMPTY_VALUE_DISPLAY
