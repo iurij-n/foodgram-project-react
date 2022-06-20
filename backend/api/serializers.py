@@ -59,22 +59,21 @@ class CustomUserSerializer(UserSerializer):
         return Follow.objects.filter(user=user, author=author).exists()
 
 
-class RecipeIngredientsSerializer(serializers.ModelSerializer):
-    amount = serializers.SerializerMethodField()
+class RecipeIngredientsSerializer(serializers.HyperlinkedModelSerializer):
     
+    id = serializers.ReadOnlyField(source='ingredient.id')
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
+
     class Meta:
-       model = Ingredient
-       fields = ('id', 'name', 'measurement_unit', 'amount')
-    
-    def get_amount(self, obj):
-        recipe_ingredient = RecipeIngredient.objects.get(ingredient__id=obj.id)
-        return recipe_ingredient.amount
+        model = RecipeIngredient
+        fields = ('id', 'name', 'measurement_unit', 'amount', )
 
 
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(read_only=True, many=True)
     author = CustomUserCreateSerializer(read_only=True)
-    ingredients = RecipeIngredientsSerializer(read_only=True, many=True)
+    ingredients = RecipeIngredientsSerializer(source='recipeingredient_set', read_only=True, many=True)
 
     class Meta:
         model = Recipe
