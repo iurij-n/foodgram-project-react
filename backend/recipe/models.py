@@ -76,6 +76,9 @@ class Recipe(models.Model):
         'Описание рецепта',
         help_text='Описание рецепта'
     )
+    image = models.ImageField('Картинка для рецепта',
+                              upload_to='recipes_img/'
+    )
     tags = models.ManyToManyField(
         Tag,
         through='RecipeTag'
@@ -163,6 +166,33 @@ class Favorites(models.Model):
     class Meta:
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'recipe'],
+                                    name='unique_favorite'),
+        ]
+
+
+class ShoppingCart(models.Model):
+    """Модель : список покупок."""
+
+    user = models.ForeignKey(
+        User,
+        verbose_name='Пользователь',
+        on_delete=models.CASCADE,
+        related_name='cart_user',
+        help_text='Имя пользователя'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        verbose_name='Рецепт',
+        on_delete=models.CASCADE,
+        related_name='cart_recipe',
+        help_text='Рецепт в списке покупок'
+    )
+    
+    class Meta:
+        verbose_name = 'Список покупок'
+        verbose_name_plural = 'Списки покупок'
         constraints = [
             models.UniqueConstraint(fields=['user', 'recipe'],
                                     name='unique_favorite'),

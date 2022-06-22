@@ -33,6 +33,21 @@ EMPTY_VALUE_DISPLAY = '-пусто-'
 
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 
+# ADD_RECIPE_ERROR_MESSAGES = {
+#     'Favorites': {
+#         'POST': f'Рецепт \"{recipe.name}\" '
+#                 'уже есть в избранном у пользователя '
+#                 f'{user.username}',
+#         'DELETE': f'У пользователя {user.username} '
+#                   f'в избранном нет рецепта \"{recipe.name}\"'},
+#     'ShoppingCart': {
+#         'POST': f'Рецепт \"{recipe.name}\" '
+#                 'уже есть в списке покупок у пользователя '
+#                 f'{user.username}',
+#         'DELETE': f'У пользователя {user.username} '
+#                   f'в списке покупок нет рецепта \"{recipe.name}\"'}
+# }
+
 
 # Application definition
 
