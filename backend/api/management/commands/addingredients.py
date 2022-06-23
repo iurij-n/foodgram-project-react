@@ -1,6 +1,9 @@
-from django.core.management.base import BaseCommand
-from recipe.models import Ingredient
 import json
+
+from django.core.management.base import BaseCommand
+
+from recipe.models import Ingredient
+
 
 class Command(BaseCommand):
     help = 'Add list of ingredients in database'

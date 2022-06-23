@@ -28,9 +28,7 @@ class User(AbstractUser):
         blank=False,
         validators=[
             RegexValidator(
-                regex='^[\w.@+-]+\Z',
-                # message='Username must be Alphanumeric',
-                # code='invalid_username'
+                regex=r'^[\w.@+-]+\Z',
             ),
         ]
     )
@@ -38,9 +36,6 @@ class User(AbstractUser):
         max_length=254,
         unique=True
     )
-    
-    # USERNAME_FIELD = 'email'
-    # REQUIRED_FIELDS = ['username', 'first_name', 'last_name', 'password']
 
     @property
     def allowed_role(self):

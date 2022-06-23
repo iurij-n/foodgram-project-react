@@ -1,28 +1,30 @@
-from requests import delete
+from django.db.models import Sum
+from django.http.response import HttpResponse
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions, viewsets
 from rest_framework.decorators import action
-from django.shortcuts import get_object_or_404
-from fpdf import FPDF
+from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
-from django.http.response import HttpResponse
-from django.db.models import Avg, Count, Min, Sum
 from rest_framework.status import (HTTP_201_CREATED, HTTP_204_NO_CONTENT,
-                                   HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED)
+                                   HTTP_400_BAD_REQUEST)
 
-from recipe.models import Favorites, RecipeIngredient, Tag, Recipe, Ingredient, ShoppingCart
+from recipe.models import (Favorites, Ingredient, Recipe, RecipeIngredient,
+                           ShoppingCart, Tag)
 from users.models import User
+
+from .filters import RecipeFilter
+from .pagination import RecipeListPagination, UserListPagination
 from .permissions import AuthorOrReadOnly
-from .pagination import UserListPagination, RecipeListPagination
-from .serializers import (TagSerializer,
-                          RecipeSerializer,
-                          CustomUserCreateSerializer,
-                          AddFavoritesSerializer,
-                          UserListSerializer,
-                          IngredientSerializer,
-                          CustomUserSerializer)
+from .serializers import (AddFavoritesSerializer, CustomUserCreateSerializer,
+                          CustomUserSerializer, IngredientSerializer,
+                          RecipeSerializer, TagSerializer)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Вьюсет для вывода списка тегов рецепта
+    """
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (permissions.AllowAny,)
@@ -32,8 +34,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     pagination_class = RecipeListPagination
-    permission_classes = [AuthorOrReadOnly]
-    
+    permission_classes = (AuthorOrReadOnly,)
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    filterset_class = RecipeFilter
+    search_fields = ('name',)
+
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[permissions.IsAuthenticated])
     def favorite(self, request, pk):
@@ -63,7 +68,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                            f'в избранном нет рецепта \"{recipe.name}\"'},
                 status=HTTP_400_BAD_REQUEST
             )
-    
+
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[permissions.IsAuthenticated])
     def shopping_cart(self, request, pk):
@@ -93,7 +98,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                            f'в списке покупок нет рецепта \"{recipe.name}\"'},
                 status=HTTP_400_BAD_REQUEST
             )
-    
+
     @action(detail=False, methods=['get'],
             permission_classes=[permissions.IsAuthenticated])
     def download_shopping_cart(self, request):
@@ -102,62 +107,40 @@ class RecipeViewSet(viewsets.ModelViewSet):
             recipe_id__cart_recipe__user=user).values_list(
                 'ingredient__name',
                 'ingredient__measurement_unit').annotate(Sum('amount'))
-        
+
         filename = 'shopping_list.txt'
-        shopping_list = (
-            'Список покупок:\n\n'
-            # f'{dt.now().strftime(conf.DATE_TIME_FORMAT)}\n\n'
-        )
+        shopping_list = ('Список покупок:\n\n')
         for ingredient in ingredients:
             shopping_list += (
                 f'{ingredient[0].capitalize()} '
                 f'({ingredient[1]}) - {ingredient[2]}\n'
             )
 
-        response = HttpResponse(shopping_list, 
+        response = HttpResponse(shopping_list,
                                 content_type='text.txt; charset=utf-8')
         response['Content-Disposition'] = f'attachment; filename={filename}'
         return response
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
 class UserViewSet(generics.ListCreateAPIView):
     queryset = User.objects.all()
-    # serializer_class = CustomUserCreateSerializer
     serializer_class = CustomUserSerializer
     permission_classes = (permissions.AllowAny,)
     pagination_class = UserListPagination
-    
+
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return CustomUserCreateSerializer
         return CustomUserSerializer
-        # return UserListSerializer
 
-# class UserList(generics.ListCreateAPIView):
-#     queryset = User.objects.all()
-#     serializer_class = CustomUserCreateSerializer
-#     permission_classes = (permissions.AllowAny,)
 
 class UserDetail(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
-    # serializer_class = UserDetailSerializer
     permissions_calsses = (permissions.IsAuthenticated,)
+
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (permissions.AllowAny,)
-    
-
