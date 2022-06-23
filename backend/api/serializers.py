@@ -78,6 +78,7 @@ class RecipeIngredientsSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+    image = Base64ImageField()
     tags = TagSerializer(read_only=True, many=True)
     author = CustomUserSerializer(read_only=True)
     ingredients = RecipeIngredientsSerializer(source='recipeingredient_set',
@@ -94,6 +95,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                   'is_favorited',
                   'is_in_shopping_cart',
                   'name',
+                  'image',
                   'text',
                   'cooking_time')
         read_only_fields = ('is_favorite', 'is_shopping_cart')
