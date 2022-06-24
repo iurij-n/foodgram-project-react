@@ -64,7 +64,7 @@ jobs:
             sudo docker compose stop
             sudo docker compose rm backend
             sudo docker pull iurij/foodgram_back:latest
-            sudo docker iurij/foodgram_front:latest
+            sudo docker pull iurij/foodgram_front:latest
             rm .env
             touch .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
