@@ -159,11 +159,11 @@ class RecipeSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-
+        image = validated_data.pop('image')
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         user = self.context['request'].user
-        recipe = Recipe.objects.create(author=user, **validated_data)
+        recipe = Recipe.objects.create(image=image, author=user, **validated_data)
 
         recipe.tags.set(tags)
 
@@ -215,3 +215,39 @@ class AddFavoritesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
+
+class AddFollowSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source='author.id')
+    email = serializers.ReadOnlyField(source='author.email')
+    username = serializers.ReadOnlyField(source='author.username')
+    first_name = serializers.ReadOnlyField(source='author.first_name')
+    last_name = serializers.ReadOnlyField(source='author.last_name')
+    is_subscribed = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Follow
+        fields = ('email',
+                  'id',
+                  'username',
+                  'first_name',
+                  'last_name',
+                  'is_subscribed',
+                  'recipes',
+                  'recipes_count')
+    
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        limit = request.GET.get('recipes_limit')
+        queryset = Recipe.objects.filter(author=obj.author)
+        if limit:
+            queryset = queryset[:int(limit)]
+        return AddFavoritesSerializer(queryset, many=True).data
+
+    def get_is_subscribed(self, obj):
+        return Follow.objects.filter(user=obj.user, 
+                                     author=obj.author).exists()
+    
+    def get_recipes_count(self, obj):
+        return Recipe.objects.filter(author=obj.author).count()

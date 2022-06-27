@@ -26,6 +26,7 @@ class User(AbstractUser):
         max_length=150,
         unique=True,
         blank=False,
+        verbose_name='Логин',
         validators=[
             RegexValidator(
                 regex=r'^[\w.@+-]+\Z',
@@ -34,6 +35,7 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         max_length=254,
+        verbose_name='Адрес электронной почты',
         unique=True
     )
 
@@ -47,3 +49,5 @@ class User(AbstractUser):
 
     class Meta:
         ordering = ('pk',)
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'

@@ -74,14 +74,16 @@ class Recipe(models.Model):
     )
     image = models.ImageField(
         'Картинка для рецепта',
-        upload_to='recipes_img/'
+        upload_to='media/'
     )
     tags = models.ManyToManyField(
         Tag,
+        verbose_name='Тэги рецепта',
         through='RecipeTag'
     )
     ingredients = models.ManyToManyField(
         Ingredient,
+        verbose_name='Ингредиенты рецепта',
         through='RecipeIngredient'
     )
     cooking_time = models.PositiveSmallIntegerField(
@@ -89,12 +91,11 @@ class Recipe(models.Model):
         help_text='Время приготовления в минутах'
     )
     pub_date = models.DateTimeField(
-        'Дата и время написания обзора',
+        'Дата и время написания рецепта',
         auto_now_add=True
     )
 
     class Meta:
-
         ordering = ('-pub_date',)
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
@@ -108,12 +109,19 @@ class RecipeTag(models.Model):
 
     tag = models.ForeignKey(
         Tag,
+        verbose_name='Тэг',
         on_delete=models.CASCADE,
     )
     recipe = models.ForeignKey(
         Recipe,
+        verbose_name='Рецепт',
         on_delete=models.CASCADE,
     )
+
+    class Meta:
+        ordering = ('-id',)
+        verbose_name = 'Тэг рецепта'
+        verbose_name_plural = 'Тэги рецепта'
 
 
 class RecipeIngredient(models.Model):
@@ -137,7 +145,6 @@ class RecipeIngredient(models.Model):
     )
 
     class Meta:
-
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
 
@@ -163,10 +170,10 @@ class Favorites(models.Model):
     class Meta:
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
-        constraints = [
-            models.UniqueConstraint(fields=['user', 'recipe'],
+        constraints = (
+            models.UniqueConstraint(fields=('user', 'recipe'),
                                     name='unique_favorite'),
-        ]
+        )
 
 
 class ShoppingCart(models.Model):
@@ -190,10 +197,10 @@ class ShoppingCart(models.Model):
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
-        constraints = [
-            models.UniqueConstraint(fields=['user', 'recipe'],
+        constraints = (
+            models.UniqueConstraint(fields=('user', 'recipe'),
                                     name='unique_shopping_cart'),
-        ]
+        )
 
 
 class Follow(models.Model):
@@ -217,9 +224,9 @@ class Follow(models.Model):
     class Meta:
         verbose_name = 'Подписки'
         verbose_name_plural = 'Подписки'
-        constraints = [
-            models.UniqueConstraint(fields=['user', 'author'],
+        constraints = (
+            models.UniqueConstraint(fields=('user', 'author'),
                                     name='unique_follow'),
             models.CheckConstraint(check=~Q(user=F('author')),
                                    name='subscribe_to_yourself'),
-        ]
+        )
