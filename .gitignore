@@ -75,6 +75,6 @@ dmypy.json
 ReDoc.mhtml
 WorkFlow.docx
 local_fixtures.json
-.vscode
-backend/.vscode
+.vscode/
+backend/.vscode/
 __docker-compose.yml

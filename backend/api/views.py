@@ -9,11 +9,6 @@ from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework.status import (HTTP_201_CREATED, HTTP_204_NO_CONTENT,
                                    HTTP_400_BAD_REQUEST)
-
-from recipe.models import (Favorites, Follow, Ingredient, Recipe,
-                           RecipeIngredient, ShoppingCart, Tag)
-from users.models import User
-
 from .filters import RecipeFilter
 from .pagination import RecipeListPagination, UserListPagination
 from .permissions import AuthorOrReadOnly
@@ -21,6 +16,9 @@ from .serializers import (AddFavoritesSerializer, AddFollowSerializer,
                           CustomUserCreateSerializer, CustomUserSerializer,
                           IngredientSerializer, RecipeSerializer,
                           TagSerializer)
+from recipe.models import (Favorites, Follow, Ingredient, Recipe,
+                           RecipeIngredient, ShoppingCart, Tag)
+from users.models import User
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
