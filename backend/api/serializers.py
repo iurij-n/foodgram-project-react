@@ -1,9 +1,10 @@
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
+from rest_framework import serializers
+
 from recipe.models import (Favorites, Follow, Ingredient, Recipe,
                            RecipeIngredient, ShoppingCart, Tag)
-from rest_framework import serializers
 from users.models import User
 
 
@@ -77,7 +78,7 @@ class RecipeIngredientsSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    image = Base64ImageField()
+    image = Base64ImageField(use_url=True, max_length=None)
     tags = TagSerializer(read_only=True, many=True)
     author = CustomUserSerializer(read_only=True)
     ingredients = RecipeIngredientsSerializer(source='recipeingredient_set',
@@ -103,9 +104,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         if self.context['request'].auth is None:
             return False
         user = self.context['request'].user
-        if Favorites.objects.filter(user=user, recipe=obj).exists():
-            return True
-        return False
+        return Favorites.objects.filter(user=user, recipe=obj).exists()
 
     def get_is_in_shopping_cart(self, obj):
         if self.context['request'].auth is None:
@@ -150,20 +149,13 @@ class RecipeSerializer(serializers.ModelSerializer):
             tag_list.append(tag_obj)
         data['tags'] = tags
 
-        image = self.initial_data.get('image')
-        if not image:
-            raise serializers.ValidationError({
-                'image': 'Нельзя добавить рецепт без картинки'})
-        data['image'] = image
-
         return data
 
     def create(self, validated_data):
-        image = validated_data.pop('image')
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         user = self.context['request'].user
-        recipe = Recipe.objects.create(image=image, author=user, **validated_data)
+        recipe = Recipe.objects.create(author=user, **validated_data)
 
         recipe.tags.set(tags)
 
@@ -216,6 +208,7 @@ class AddFavoritesSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
 
+
 class AddFollowSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source='author.id')
     email = serializers.ReadOnlyField(source='author.email')
@@ -236,7 +229,7 @@ class AddFollowSerializer(serializers.ModelSerializer):
                   'is_subscribed',
                   'recipes',
                   'recipes_count')
-    
+
     def get_recipes(self, obj):
         request = self.context.get('request')
         limit = request.GET.get('recipes_limit')
@@ -246,8 +239,8 @@ class AddFollowSerializer(serializers.ModelSerializer):
         return AddFavoritesSerializer(queryset, many=True).data
 
     def get_is_subscribed(self, obj):
-        return Follow.objects.filter(user=obj.user, 
+        return Follow.objects.filter(user=obj.user,
                                      author=obj.author).exists()
-    
+
     def get_recipes_count(self, obj):
         return Recipe.objects.filter(author=obj.author).count()

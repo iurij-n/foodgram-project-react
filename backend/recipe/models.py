@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import F, Q
+
 from users.models import User
 
 
@@ -74,7 +75,10 @@ class Recipe(models.Model):
     )
     image = models.ImageField(
         'Картинка для рецепта',
-        upload_to='media/'
+        upload_to='media/',
+        max_length=None,
+        blank=True,
+        null=True
     )
     tags = models.ManyToManyField(
         Tag,
