@@ -3,6 +3,7 @@ from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
+from djoser.serializers import SetPasswordSerializer
 from rest_framework.pagination import PageNumberPagination
 from recipe.models import (Favorites, Follow, Ingredient, Recipe,
                            RecipeIngredient, ShoppingCart, Tag)
@@ -124,15 +125,33 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return response
 
 
-class CustomUserViewSet(viewsets.ModelViewSet):
+# class CustomUserViewSet(viewsets.ModelViewSet):
+class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     pagination_class = UserListPagination
-    permission_classes = (permissions.AllowAny,)
+    # permission_classes = (permissions.AllowAny,)
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return CustomUserCreateSerializer
         return CustomUserSerializer
+   
+    @action(detail=False, permission_classes=[permissions.IsAuthenticated,])
+    def me(self, request):
+        user = request.user
+        serializer = CustomUserSerializer(user, context={'request': request})
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["post"])
+    def set_password(self, request, *args, **kwargs):
+        serializer = SetPasswordSerializer(data=request.data,
+                                           context={'request': request})
+        serializer.is_valid(raise_exception=True)
+
+        self.request.user.set_password(serializer.data["new_password"])
+        self.request.user.save()
+
+        return Response(status=HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[permissions.IsAuthenticated,])
@@ -170,12 +189,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
                 status=HTTP_400_BAD_REQUEST
             )
 
-
-class UserDetail(generics.RetrieveAPIView):
-    queryset = User.objects.all()
-    serializer_class = CustomUserSerializer
-    permissions_calsses = (permissions.IsAuthenticated,)
-
+    
     @action(detail=False, url_path='subscriptions', url_name='subscriptions',
             permission_classes=[permissions.IsAuthenticated],
             serializer_class=AddFollowSerializer)
@@ -189,6 +203,14 @@ class UserDetail(generics.RetrieveAPIView):
             context={'request': request}
         )
         return self.get_paginated_response(serializer.data)
+    
+
+
+class UserDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = CustomUserSerializer
+    permissions_calsses = (permissions.IsAuthenticated,)
+
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
