@@ -114,11 +114,18 @@ class RecipeSerializer(serializers.ModelSerializer):
         return False
 
     def validate(self, data):
+        cooking_time = self.initial_data.get('cooking_time')
+        if cooking_time < 1:
+            raise serializers.ValidationError({
+                'cooking_time': 'Время приготовления не может быть меньше 1 минуты'})
+        data['cooking_time'] = cooking_time
+        
         ingredients = self.initial_data.get('ingredients')
         if not ingredients:
             raise serializers.ValidationError({
                 'ingredients': 'Список ингредиентов не может быть пустым'})
         ingredient_list = []
+        
         for ingredient in ingredients:
             ingredient_obj = get_object_or_404(Ingredient,
                                                id=ingredient['id'])
