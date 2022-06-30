@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
+
 from recipe.models import (Favorites, Follow, Ingredient, Recipe,
                            RecipeIngredient, ShoppingCart, Tag)
 from rest_framework import serializers
@@ -116,24 +117,19 @@ class RecipeSerializer(serializers.ModelSerializer):
     def validate(self, data):
         ingredients = self.initial_data.get('ingredients')
         if not ingredients:
-            raise serializers.ValidationError({
-                'ingredients': 'Список ингредиентов не может быть пустым'})
+            raise serializers.ValidationError(
+                'Список ингредиентов не может быть пустым')
         ingredient_list = []
-
         for ingredient in ingredients:
             ingredient_obj = get_object_or_404(Ingredient,
                                                id=ingredient['id'])
             if ingredient_obj in ingredient_list:
-                raise serializers.ValidationError({
-                    'ingredients':
-                    'Нельзя добавить один и тот же ингридиент несколько раз'
-                })
+                raise serializers.ValidationError(
+                    'Нельзя добавить один и тот же ингридиент несколько раз')
             ingredient_list.append(ingredient_obj)
             if int(ingredient['amount']) <= 0:
-                raise serializers.ValidationError({
-                    'ingredients':
-                        'Количество ингредиента должно быть больше 0'
-                })
+                raise serializers.ValidationError(
+                    'Количество ингредиента должно быть больше 0')
         data['ingredients'] = ingredients
 
         tags = self.initial_data.get('tags')
@@ -144,8 +140,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         for tag in tags:
             tag_obj = get_object_or_404(Tag, id=int(tag))
             if tag_obj in tag_list:
-                raise serializers.ValidationError({
-                    'tags': 'Нельзя добавить один и тот же тэг несколько раз'})
+                raise serializers.ValidationError(
+                    'Нельзя добавить один и тот же тэг несколько раз')
             tag_list.append(tag_obj)
         data['tags'] = tags
 
@@ -154,10 +150,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     def validate_cooking_time(self, data):
         cooking_time = self.initial_data.get('cooking_time')
         if int(cooking_time) < 1:
-            raise serializers.ValidationError({
-                'cooking_time':
-                'Время приготовления не может быть меньше 1 минуты'
-            })
+            raise serializers.ValidationError()
         return data
 
     def create(self, validated_data):

@@ -5,6 +5,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.serializers import SetPasswordSerializer
 from recipe.models import (Favorites, Follow, Ingredient, Recipe,
                            RecipeIngredient, ShoppingCart, Tag)
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
 from rest_framework import generics, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -13,7 +16,7 @@ from rest_framework.status import (HTTP_201_CREATED, HTTP_204_NO_CONTENT,
                                    HTTP_400_BAD_REQUEST)
 from users.models import User
 
-from .filters import RecipeFilter
+from .filters import IngredientSearchFilter, RecipeFilter
 from .pagination import RecipeListPagination, UserListPagination
 from .permissions import AuthorOrReadOnly
 from .serializers import (AddFavoritesSerializer, AddFollowSerializer,
@@ -38,7 +41,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (AuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend, SearchFilter)
     filterset_class = RecipeFilter
-    search_fields = ('name',)
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[permissions.IsAuthenticated])
@@ -109,17 +111,29 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'ingredient__name',
                 'ingredient__measurement_unit').annotate(Sum('amount'))
 
-        filename = 'shopping_list.txt'
-        shopping_list = ('Список покупок:\n\n')
+        shopping_list = []
         for ingredient in ingredients:
-            shopping_list += (
+            shopping_list.append(
                 f'{ingredient[0].capitalize()} '
-                f'({ingredient[1]}) - {ingredient[2]}\n'
+                f'({ingredient[1]}) - {ingredient[2]}'
             )
 
-        response = HttpResponse(shopping_list,
-                                content_type='text.txt; charset=utf-8')
-        response['Content-Disposition'] = f'attachment; filename={filename}'
+        pdfmetrics.registerFont(
+            TTFont('DejaVuSans', 'DejaVuSans.ttf', 'UTF-8'))
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = ('attachment; '
+                                           'filename="shopping_list.pdf"')
+        page = canvas.Canvas(response)
+        page.setFont('DejaVuSans', size=24)
+        page.drawString(200, 800, 'Список покупок')
+        page.setFont('DejaVuSans', size=16)
+        height = 750
+        for item in shopping_list:
+            page.drawString(75, height, item)
+            height -= 25
+        page.showPage()
+        page.save()
+
         return response
 
 
@@ -210,3 +224,5 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (permissions.AllowAny,)
+    filter_backends = (IngredientSearchFilter,)
+    search_fields = ('^name',)
