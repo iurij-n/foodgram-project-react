@@ -58,6 +58,10 @@ docker-compose exec backend python manage.py collectstatic --no-input
 ```
 docker-compose exec backendb python manage.py loaddata fixtures.json
 ```
+7. Документация API будет доступна по адресу:
+```
+http://localhost/api/docs/
+```
 
 ### Автор
 
